@@ -1,0 +1,33 @@
+flowchart TD
+    %% Entry
+    U[User / API Client] --> API[FastAPI]
+
+    %% Orchestration
+    API --> LG[LangGraph StateGraph]
+
+    %% Intent Routing
+    LG --> IR[Intent Router Node]
+
+    IR -->|Knowledge Query| KA[Knowledge Agent Node]
+    IR -->|Unclear Input| END_CLARIFY[END: Ask Clarification]
+
+    %% Retrieval
+    KA --> VS[Vector Search Tool]
+    VS --> KA
+
+    %% Grounding Validation
+    KA --> GA[Grounding / Evidence Agent]
+
+    GA --> EC[Evidence Checker Tool]
+    EC --> GA
+
+    %% Outcomes
+    GA -->|Ungrounded| RETRY[Retry Retrieval Edge]
+    RETRY --> KA
+
+    GA -->|Grounded| END_SUCCESS[END: Answer Approved]
+    GA -->|Contradiction| END_FAIL[END: Evidence Failure]
+
+    %% Observability
+    LG --> TR[Execution Trace]
+    TR --> DB[(SQLite / Checkpoints)]
